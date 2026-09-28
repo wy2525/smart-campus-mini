@@ -1,0 +1,262 @@
+## 产品概述
+
+基于SpringBoot + Spring Data JPA + Vue3构建的旅游小程序后台管理系统，实现完整的景点管理、订单处理、用户管理、内容审核等核心业务功能，支持数据统计分析和系统配置管理。
+
+## 核心功能
+
+- 用户管理：用户列表查看、状态管理、详情查看、订单和攻略查询
+- 景点管理：景点增删改查、门票类型管理、状态控制、排序功能
+- 门票管理：门票类型创建、价格管理、库存调整、上下架控制
+- 订单管理：订单列表查询、状态更新、订单详情、订单统计和导出
+- 攻略管理：攻略审核流程、状态管理、内容审核、数据统计
+- 评论管理：评论列表查看、删除审核、内容筛选
+- Banner管理：Banner创建编辑、拖拽排序、状态控制
+- 数据统计：用户、订单、景点、攻略等多维度数据统计和图表展示
+- 系统配置：系统参数配置、管理员账号管理
+
+## 技术栈
+
+### 后端技术
+
+- Spring Boot 4.0.1 + Java 21
+- Spring Data JPA（数据持久层）
+- MySQL 8.0（数据库）
+- SpringDoc OpenAPI（API文档）
+- Lombok（代码简化）
+
+### 前端技术
+
+- Vue 3（Composition API）
+- Vue Router 4（路由管理）
+- Pinia（状态管理）
+- Element Plus（UI组件库）
+- Axios（HTTP请求）
+- ECharts（数据可视化）
+
+## 系统架构
+
+### 整体架构
+
+```mermaid
+graph TB
+    Client[Vue3前端] -->|HTTP/RESTful| Controller[Controller层]
+    Controller --> Service[Service层]
+    Service --> Repository[Repository层]
+    Repository --> JPA[Spring Data JPA]
+    JPA --> MySQL[(MySQL数据库)]
+    Controller --> SpringDoc[SpringDoc API文档]
+```
+
+### 模块划分
+
+**后端模块：**
+
+- **实体模块**：9个核心实体类（User、Attraction、TicketType、Order、Guide、Comment、Banner、Admin、SystemConfig）
+- **Repository模块**：JPA接口，定义数据访问方法
+- **Service模块**：业务逻辑层，处理复杂业务操作
+- **Controller模块**：RESTful API接口层
+- **公共模块**：统一响应、异常处理、工具类
+
+**前端模块：**
+
+- **视图层**：16个页面组件
+- **组件层**：8个通用组件（表格、分页、搜索、上传、编辑器、图表等）
+- **API层**：7个API模块，封装HTTP请求
+- **状态层**：Pinia store，管理全局状态
+- **路由层**：路由配置和权限控制
+
+### 数据流
+
+```mermaid
+flowchart LR
+    A[用户操作] --> B[Vue组件]
+    B --> C[Pinia Store]
+    C --> D[Axios请求]
+    D --> E[Spring Controller]
+    E --> F[Service处理]
+    F --> G[Repository查询]
+    G --> H[MySQL数据库]
+    H --> G
+    G --> F
+    F --> E
+    E --> D
+    D --> C
+    C --> B
+    B --> I[页面渲染]
+```
+
+## 实施细节
+
+### 核心目录结构
+
+```
+后端：
+demo/demo/src/main/java/com/example/demo/
+├── entity/              # 实体类
+│   ├── User.java
+│   ├── Attraction.java
+│   ├── TicketType.java
+│   ├── Order.java
+│   ├── Guide.java
+│   ├── Comment.java
+│   ├── Banner.java
+│   ├── Admin.java
+│   └── SystemConfig.java
+├── repository/          # JPA Repository
+│   ├── UserRepository.java
+│   ├── AttractionRepository.java
+│   ├── TicketTypeRepository.java
+│   ├── OrderRepository.java
+│   ├── GuideRepository.java
+│   ├── CommentRepository.java
+│   └── BannerRepository.java
+├── service/             # Service层
+│   ├── UserService.java
+│   ├── AttractionService.java
+│   ├── TicketTypeService.java
+│   ├── OrderService.java
+│   ├── GuideService.java
+│   ├── CommentService.java
+│   ├── BannerService.java
+│   └── StatisticsService.java
+├── controller/          # Controller层
+│   ├── UserController.java
+│   ├── AttractionController.java
+│   ├── TicketTypeController.java
+│   ├── OrderController.java
+│   ├── GuideController.java
+│   ├── CommentController.java
+│   ├── BannerController.java
+│   ├── StatisticsController.java
+│   └── SystemController.java
+├── dto/                 # 数据传输对象
+│   ├── PageRequest.java
+│   ├── ApiResponse.java
+│   └── OrderStatistics.java
+├── config/              # 配置类
+│   ├── JpaConfig.java
+│   └── OpenApiConfig.java
+└── exception/           # 异常处理
+    ├── GlobalExceptionHandler.java
+    └── BusinessException.java
+
+前端：
+qianduan/
+├── src/
+│   ├── views/          # 页面组件
+│   │   ├── login/
+│   │   ├── layout/
+│   │   ├── dashboard/
+│   │   ├── users/
+│   │   ├── attractions/
+│   │   ├── orders/
+│   │   ├── guides/
+│   │   ├── comments/
+│   │   ├── banners/
+│   │   └── system/
+│   ├── components/     # 公共组件
+│   │   ├── common/
+│   │   └── charts/
+│   ├── router/         # 路由
+│   ├── store/          # Pinia store
+│   ├── api/            # API接口
+│   └── utils/          # 工具函数
+└── package.json
+```
+
+### 关键代码结构
+
+**实体类示例：**
+
+```java
+@Entity
+@Table(name = "attractions")
+@Data
+public class Attraction {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false, length = 100)
+    private String name;
+    
+    @Enumerated(EnumType.STRING)
+    private Category category;
+    
+    private BigDecimal price;
+    
+    @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL)
+    private List<TicketType> tickets;
+}
+```
+
+**统一响应格式：**
+
+```java
+@Data
+@Builder
+public class ApiResponse<T> {
+    private Integer code;
+    private String message;
+    private T data;
+    
+    public static <T> ApiResponse<T> success(T data) {
+        return ApiResponse.<T>builder()
+            .code(200)
+            .message("success")
+            .data(data)
+            .build();
+    }
+}
+```
+
+### 技术实施计划
+
+1. **后端基础设施搭建**：添加依赖、配置数据库、创建OpenAPI配置
+2. **实体和Repository开发**：创建9个实体类和对应的JPA接口
+3. **Service和Controller开发**：实现业务逻辑和RESTful API
+4. **前端项目初始化**：创建Vue3项目、配置Element Plus、路由和状态管理
+5. **公共组件开发**：表格、分页、搜索、上传、编辑器等通用组件
+6. **业务页面开发**：按模块逐步实现16个页面组件
+7. **API集成和联调**：前后端数据对接和功能测试
+
+### 技术考虑
+
+**日志：** 使用SLF4J + Logback，统一日志格式和级别
+**性能优化：** 分页查询、索引优化、前端懒加载、组件按需引入
+**安全措施：** 密码BCrypt加密、JWT认证、CORS配置、输入验证
+**可扩展性：** 分层架构、模块化设计、配置外部化
+
+## 设计风格
+
+采用现代企业级后台管理设计风格，基于Element Plus组件库构建。整体设计追求简洁高效，注重数据展示的可读性和操作流程的便捷性。
+
+## 设计布局
+
+### 整体布局
+
+采用经典的后台管理系统布局：左侧固定侧边栏导航（240px宽），顶部工具栏（60px高），右侧主要内容区域自适应。支持深色/浅色主题切换，响应式适配不同屏幕尺寸。
+
+### 登录页面
+
+居中卡片式设计，包含品牌Logo、登录表单（用户名、密码）、记住密码选项和登录按钮。背景使用渐变色或高质量旅游主题图片，营造专业氛围。
+
+### 数据总览页面
+
+顶部4个数据统计卡片（用户数、订单数、景点数、攻略数），使用数字大字体显示和趋势图标。中间区域分为左右两栏：左侧用户增长折线图（最近7天），右侧订单统计柱状图（最近7天）。底部展示热门景点排行榜和最新订单列表。
+
+### 列表页面
+
+顶部搜索栏（搜索框+筛选器+重置按钮），中间表格区域（支持列排序、选择、操作按钮），底部分页组件。表格操作列包含查看、编辑、删除等常用操作。
+
+### 表单页面
+
+分为基本信息、详细设置、其他选项等多个选项卡或区域。使用表单验证规则，实时校验输入内容。图片上传支持预览和裁剪。
+
+## 交互设计
+
+- 表格行悬停效果
+- 按钮点击波纹效果
+- 页面切换淡入淡出动画
+- 加载数据时显示骨架屏
+- 操作成功/失败使用消息提示
